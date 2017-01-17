@@ -7,15 +7,13 @@ Maintained in mongoDB user's collection
 	//set accordingly
 	'login_type':"facebook/google"
 	//Either have google props
-	'googleProfilePic':"url to google or facebook",
-	'googleID':"id_of_user on google",
+	'google_id':"id_of_user on google",
 	//or facebook props
 	'facebookID':"id_of_user on facebook",
-	'facebooLink':"link to facebook profile",
-	'facebookProfilePic':"link to facebook profile picture"
+	'prof_pic':"link to either google or fb prof pic",
 
 	//later versions
-	'charisma': (positive votes/no.of votes)*100;
+	'charisma': (positive votes/no.of votes)*100
 }
 
 
