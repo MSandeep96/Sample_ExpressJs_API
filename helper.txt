@@ -1,0 +1,53 @@
+Expected format for user:
+Maintained in mongoDB user's collection
+{
+	'id':uniqueID !important,
+	'session_id': "generate a random id each time user logs in, required for shared preferences in android" !important,
+	'name':"bleh",
+	//Either have google props
+	'googleProfilePic':"url to google or facebook",
+	'googleID':"id_of_user on google",
+	//or facebook props
+	'facebookID':"id_of_user on facebook",
+	'facebooLink':"link to facebook profile",
+	'facebookProfilePic':"link to facebook profile picture"
+
+	//later versions
+	'charisma': (positive votes/no.of votes)*100;
+}
+
+
+Private post format:
+Maintained in mongoDB private post's collection
+{
+	'id': uniqueId for post !important,
+	'createdOn':timeInMillis,
+	'content':"Content of the post here",
+	'createdBy':userID,
+	'assigned':false or true, //whether the post has been assigned to someone or not
+	'assignedTo':anotherUserID, //needs to be randomly selected but hooooooooooooooooooow?
+	'read':true or false //whether the assignee has read the post or not
+	'replied':true or false //whether the assignee has replied or not
+}
+
+Reply format:
+Maintained in mongoDB replies collection
+{
+	'id':uniqueID for reply !important,
+	'issuedOn':timeInMillis,
+	'content':"Content of the reply",
+	'writtenBy':anotherUserID,
+	''
+}
+
+Public posts list:
+Maintained in mongoDB public post's collection
+{
+	'id': uniqueId for post !important,
+	'createdOn':timeInMillis,
+	'content':"Content of the post",
+	'writtenBy':userID,
+	'writtenByName':user's name,(redundancy for mongo)
+	'writtenByProfPic':user's prof pic,(redundancy)
+	'starCount':0,(count the no. of times the post has been starred by others)
+}
