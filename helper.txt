@@ -1,9 +1,11 @@
 Expected format for user:
 Maintained in mongoDB user's collection
-{
+{  
 	'id':uniqueID !important,
 	'session_id': "generate a random id each time user logs in, required for shared preferences in android" !important,
 	'name':"bleh",
+	//set accordingly
+	'login_type':"facebook/google"
 	//Either have google props
 	'googleProfilePic':"url to google or facebook",
 	'googleID':"id_of_user on google",
@@ -36,8 +38,7 @@ Maintained in mongoDB replies collection
 	'id':uniqueID for reply !important,
 	'issuedOn':timeInMillis,
 	'content':"Content of the reply",
-	'writtenBy':anotherUserID,
-	''
+	'writtenBy':anotherUserID
 }
 
 Public posts list:
