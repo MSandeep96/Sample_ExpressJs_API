@@ -23,7 +23,7 @@ Maintained in mongoDB private post's collection
 	'id': uniqueId for post !important,
 	'createdOn':timeInMillis,
 	'content':"Content of the post here",
-	'createdBy':userID,
+	'written_by':userID,
 	'assigned':false or true, //whether the post has been assigned to someone or not
 	'assignedTo':anotherUserID, //needs to be randomly selected but hooooooooooooooooooow?
 	'read':true or false //whether the assignee has read the post or not
@@ -43,9 +43,10 @@ Public posts list:
 Maintained in mongoDB public post's collection
 {
 	'id': uniqueId for post !important,
-	'createdOn':timeInMillis,
+	'created_on':timeInMillis,
 	'content':"Content of the post",
-	'writtenBy':userID,
+	'written_by':userID,
+	'session_id':sessionID,
 	'writtenByName':user's name,(redundancy for mongo)
 	'writtenByProfPic':user's prof pic,(redundancy)
 	'starCount':0,(count the no. of times the post has been starred by others)

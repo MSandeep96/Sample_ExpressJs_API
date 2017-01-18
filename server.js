@@ -2,6 +2,7 @@
 const express=require('express');
 const mongoClient=require('mongodb').MongoClient;
 const bodyParser = require('body-parser');
+const objectId=require('mongodb').ObjectId;
 
 const app=express();
 
@@ -17,7 +18,7 @@ mongoClient.connect("mongodb://sande96:queenrocks96@ds011228.mlab.com:11228/dear
 app.use(bodyParser.json());
 
 //Server setup and running. Helper functions follow
-var reply(success,comment){
+function reply(success,comment){
 	this.success=success;
 	this.comment=comment;
 }
@@ -46,6 +47,30 @@ function hasValidBody(body,res){
 	}
 	if(body.google_id==undefined && body.facebook_id==undefined){
 		res.status(400).send(baseRes(false,"No valid google or facebook ID"));
+		return false;
+	}
+	return true;
+}
+
+function hasValidParamsPubPost(body,res){
+	if(body.content==""){
+		res.status(400).send(baseRes(false,"Invalid content."));
+		return false;
+	}
+	if(body.starCount!=undefined){
+		res.status(400).send(baseRes(false,"Invalid starCount, counterfeit detected."));
+		return false;
+	}
+	return true;
+}
+
+function hasValidParamsPrivPost(body,res){
+	if(body.content==""){
+		res.status(400).send(baseRes(false,"Invalid content"));
+		return false;
+	}
+	if(body.assigned!=undefined || body.read!=undefined || body.replied!=undefined){
+		res.status(400).send(baseRes(false,"Invalid options"));
 		return false;
 	}
 	return true;
@@ -123,4 +148,83 @@ function createUser(req,res,next){
 
 
 //Let user make a public post online
-app.post('/makePublicPost',)
+app.post('/makePublicPost',[checkValParsPubPost,checkValidLogin,addPublicPost]);
+
+function checkValParsPubPost(req,res,next){
+	if(!req.body){
+		res.status(400).send(baseRes(false,"No body"));	
+	}else if(hasValidParamsPubPost(req.body,res)){
+		next();
+	}
+}
+
+function checkValidLogin(req,res,next){
+	var queryObj={
+		'_id':new objectId(req.body.written_by)
+	};
+	db.collection('users')
+	.findOne(queryObj,(err,rec)=>{
+		if(err) throw err;
+		if(!rec){
+			res.status(403).send(baseRes(false,"Invalid user. Logging you out."));
+		}else if(rec['session_id']!=req.body.session_id){
+			res.status(403).send(baseRes(false,"Invalid session. Logging you out."));
+		}else{
+			next();
+		}
+	});
+}
+
+function addPublicPost(req,res){
+	req.body['created_on']=(new Date()).getTime();
+	req.body['star_count']=0;
+	req.body['expires_on']=req.body['created_on']+86400000;
+	delete req.body['session_id'];
+	db.collection('public_posts')
+	.insert(req.body,(err,recs)=>{
+		if(err){
+			res.status(500).send(baseRes(false,"Database error"));
+			throw err;
+		}else{
+			var reply=baseRes(true,"Successful");
+			reply['created_on']=req.body['created_on'];
+			reply['posted']=true;
+			reply['expires_on']=req.body.expires_on;
+			res.status(200).send(reply);
+		}
+	});
+}
+
+
+//make private posts
+app.post('/makePrivatePost',[checkValParsPrivPost,checkValidLogin,addPrivatePost]);
+
+function checkValParsPrivPost(req,res,next){
+	if(!req.body){
+		res.status(400).send("No body");
+	}else if(hasValidParamsPrivPost(req.body,res)){
+		next();
+	}
+}
+
+function addPrivatePost(req,res){
+	req.body['created_on']=(new Date()).getTime();
+	req.body['expires_on']=req.body['created_on']+86400000;
+	req.body['assigned']=false;
+	req.body['read']=false;
+	req.body['replied']=false;
+	delete req.body['session_id'];
+	db.collection('private_posts')
+	.insert(req.body,(err,recs)=>{
+		if(err){
+			res.status(500).send(baseRes(false,"Database error"));
+			throw error;
+		}else{
+			var reply=baseRes(true,"Successful");
+			reply['created_on']=req.body['created_on'];
+			reply['posted']=true;
+			reply['expires_on']=req.body.expires_on;
+			res.status(200).send(reply);
+		}
+	})
+}
