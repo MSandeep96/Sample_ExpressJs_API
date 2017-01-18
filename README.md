@@ -58,7 +58,8 @@ Reply
 	}
 
 ##(.../makePublicPost)
-Can be used to make a public post by a user
+Can be used to make a public post by a user. Collection of public posts have a TTL of 24 hours.
+Can't make a new post if there is a post within the last 24hrs.
 
 >Params
 
@@ -86,7 +87,8 @@ Can be used to make a public post by a user
 when a 403 status is sent. BaseResponses are present for other errors.
 
 ##(.../makePrivatePost)
-Can be used to make a private post by a user
+Can be used to make a private post by a user. Collection of private posts have a TTL of 24 hours.
+Can't make a new post if there is a post within the last 24 hrs.
 
 >Params
 

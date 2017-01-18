@@ -148,7 +148,7 @@ function createUser(req,res,next){
 
 
 //Let user make a public post online
-app.post('/makePublicPost',[checkValParsPubPost,checkValidLogin,addPublicPost]);
+app.post('/makePublicPost',[checkValParsPubPost,checkValidLogin,hasAnotherPost,addPublicPost]);
 
 function checkValParsPubPost(req,res,next){
 	if(!req.body){
@@ -175,10 +175,32 @@ function checkValidLogin(req,res,next){
 	});
 }
 
+function hasAnotherPost(req,res,next){
+	var queryObj={
+		'written_by':req.body['written_by']
+	};
+	db.collection('public_posts')
+	.findOne(queryObj,(err,doc)=>{
+		if(err) throw err;
+		if(!doc){
+			db.collection('private_posts')
+			.findOne(queryObj,(errp,docp)=>{
+				if(errp) throw errp;
+				if(!docp){
+					next();
+				}else{
+					res.status(400).send(baseRes(false,"You need to wait 24 hrs from your last post."));
+				}
+			});
+		}else{
+			res.status(400).send(baseRes(false,"You need to wait 24 hrs from your last post."));
+		}
+	})
+}
+
 function addPublicPost(req,res){
-	req.body['created_on']=(new Date()).getTime();
+	req.body['createdAt']=new Date();
 	req.body['star_count']=0;
-	req.body['expires_on']=req.body['created_on']+86400000;
 	delete req.body['session_id'];
 	db.collection('public_posts')
 	.insert(req.body,(err,recs)=>{
@@ -187,9 +209,8 @@ function addPublicPost(req,res){
 			throw err;
 		}else{
 			var reply=baseRes(true,"Successful");
-			reply['created_on']=req.body['created_on'];
+			reply['createdAt']=(new Date(req.body['createdAt'])).getTime();
 			reply['posted']=true;
-			reply['expires_on']=req.body.expires_on;
 			res.status(200).send(reply);
 		}
 	});
@@ -197,7 +218,7 @@ function addPublicPost(req,res){
 
 
 //make private posts
-app.post('/makePrivatePost',[checkValParsPrivPost,checkValidLogin,addPrivatePost]);
+app.post('/makePrivatePost',[checkValParsPrivPost,checkValidLogin,hasAnotherPost,addPrivatePost]);
 
 function checkValParsPrivPost(req,res,next){
 	if(!req.body){
@@ -208,8 +229,7 @@ function checkValParsPrivPost(req,res,next){
 }
 
 function addPrivatePost(req,res){
-	req.body['created_on']=(new Date()).getTime();
-	req.body['expires_on']=req.body['created_on']+86400000;
+	req.body['createdAt']=new Date();
 	req.body['assigned']=false;
 	req.body['read']=false;
 	req.body['replied']=false;
@@ -221,10 +241,9 @@ function addPrivatePost(req,res){
 			throw error;
 		}else{
 			var reply=baseRes(true,"Successful");
-			reply['created_on']=req.body['created_on'];
+			reply['createdAt']=(new Date(req.body['createdAt'])).getTime();
 			reply['posted']=true;
-			reply['expires_on']=req.body.expires_on;
 			res.status(200).send(reply);
 		}
-	})
+	});
 }
