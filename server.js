@@ -217,6 +217,23 @@ function addPublicPost(req,res){
 }
 
 
+//@TO-DO(remove) for testing
+app.post('/makePublicPost/test',function(req,res){
+	var body=req.body;
+	body=body.map(function(val){
+		val['createdAt']=new Date();
+		val['star_count']=0;
+		return val;
+	});
+	db.collection('public_posts')
+	.insertMany(body,function(err,r){
+		if(err) throw err;
+		console.log(r);
+		res.sendStatus(400);
+	});
+});
+
+
 //make private posts
 app.post('/makePrivatePost',[checkValParsPrivPost,checkValidLogin,hasAnotherPost,addPrivatePost]);
 
@@ -245,5 +262,54 @@ function addPrivatePost(req,res){
 			reply['posted']=true;
 			res.status(200).send(reply);
 		}
+	});
+}
+
+
+//Get public posts, endpoint gives the latest twenty posts.
+app.get('/getPublicPosts',getPublicPosts);
+
+function getPublicPosts(req,res){
+	var ops={
+		'sort':[['createdAt','desc']],
+		'limit': 20
+	};
+	db.collection('public_posts')
+	.find({},ops,(err,cursor)=>{
+		if(err) throw err;
+
+		cursor.toArray((err,docs)=>{
+			res.status(200).send(docs);
+		});
+	});
+}
+
+
+//get public requests(with indentation), append last id and last timestamp in millis
+app.get('/getpublicposts/:last_id/:last_timestamp',getPublicPostsInden);
+
+function getPublicPostsInden(req,res){
+	var timStamp=new Date(Number(req.params.last_timestamp));
+	var query={
+		"_id":{$lt:new objectId(req.params.last_id)},
+		"createdAt":{$lte:timStamp}
+	};
+	var ops={
+		'sort':[['createdAt','desc'],['_id','desc']],
+		'limit':20
+	};
+	db.collection('public_posts')
+	.find(query,ops,(err,cursor)=>{
+		if(err) throw err;
+
+		cursor.toArray((err,docs)=>{
+			if(docs.length>0){
+				var rep=baseRes(true,"Successful");
+				rep['posts']=docs;
+				res.status(200).send(docs);
+			}else{
+				res.status(200).send(baseRes(false,"End of posts"));
+			}
+		});
 	});
 }
