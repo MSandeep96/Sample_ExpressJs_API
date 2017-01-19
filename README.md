@@ -15,7 +15,7 @@ For better support of Retrofit, all the responses are built from the base respon
 There will always be a success tag which shows whether the action was successful or not. If not,
 the comment indicates the reason.
 
-##(.../createUser)
+##(.../createUser) @POST
 Checks whether user exists and creates a user for new credentials else logs in the user with a new Session ID.
 
 >Params
@@ -57,7 +57,7 @@ Reply
 		"comment":"Invalid login type"
 	}
 
-##(.../makePublicPost)
+##(.../makePublicPost) @POST
 Can be used to make a public post by a user. Collection of public posts have a TTL of 24 hours.
 Can't make a new post if there is a post within the last 24hrs.
 
@@ -86,7 +86,7 @@ Can't make a new post if there is a post within the last 24hrs.
 403 errors are issued when user_id(written_by) and session_id do not match. The user must be logged out
 when a 403 status is sent. BaseResponses are present for other errors.
 
-##(.../makePrivatePost)
+##(.../makePrivatePost) @POST
 Can be used to make a private post by a user. Collection of private posts have a TTL of 24 hours.
 Can't make a new post if there is a post within the last 24 hrs.
 
@@ -111,3 +111,39 @@ Can't make a new post if there is a post within the last 24 hrs.
 >Errors
 
 Same as public post creation.
+
+##(.../getPublicPosts) @GET
+This endpoint is used for fetching the first 20 public posts. No params are required. Truly in the public domain.
+
+>Reply
+
+	[
+	  {
+	    "_id": "587f46604f69611b7cbb87d4",
+	    "content": "Nulla nisl. Nunc nisl. Duis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum. In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo.",
+	    "written_by": "4852ab92-b0f1-4fe2-9961-79aaaf26fe53",
+	    "session_id": "f7ccecfc-11ea-4731-8946-a789bbc1b0ab",
+	    "createdAt": "2017-01-18T10:41:36.450Z",
+	    "star_count": 0
+	  },
+	  .
+	  .
+	  .
+	  20 posts
+	]
+
+##(.../getPublicPosts/:last_id/:last_timestamp) @GET
+This endpoint helps with pagination, send the id of the last post in the previous call along with the timestamp of that post. 
+Timestamp needs to be in milliseconds. The call then returns twenty posts after those posts.
+
+>Reply
+>>Same as getPublicPosts
+
+>Last call
+
+	{
+		'success':false,
+		'comment':End of posts
+	}
+
+
