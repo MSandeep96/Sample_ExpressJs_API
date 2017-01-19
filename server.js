@@ -248,7 +248,6 @@ function checkValParsPrivPost(req,res,next){
 function addPrivatePost(req,res){
 	req.body['createdAt']=new Date();
 	req.body['assigned']=false;
-	req.body['read']=false;
 	req.body['replied']=false;
 	delete req.body['session_id'];
 	db.collection('private_posts')
@@ -311,5 +310,78 @@ function getPublicPostsInden(req,res){
 				res.status(200).send(baseRes(false,"End of posts"));
 			}
 		});
+	});
+}
+
+
+//get assigned a task (user requests to be assigned a task)
+//requesting for assignment decreases the number of posts without response
+app.post('/assignTask',[checkValidLogin,checkIfAlreadyAssigned,asssign_task]);
+
+function checkIfAlreadyAssigned(req,res,next){
+	var query={
+		'assigned_to':new objectId(req.body['_id']);
+	};
+	db.collection('replies')
+	.findOne(query,(err,rec)=>{
+		if(err) throw err;
+		if(!rec){
+			next();
+		}else{
+			res.status(400).send(baseRes(false,"Already replied to task. Please wait for 24h from previous reply."));
+		}
+	});
+}
+
+function assign_task(req,res){
+	var query={
+		'assigned':false
+	};
+	db.collection('private_posts')
+	.findOne(query,(err,rec)=>{
+		if(err) throw err;
+		if(!rec){
+			res.status(200).send(baseRes(false,'No posts available. Sorry!'));
+		}else{
+			updateRecord(rec,req.body['_id']);
+			sendAssignedTask(res,rec,req.body['_id']);
+		}
+	});
+}
+
+function updateRecord(task,id){
+	task['assigned']=true;
+	task['assigned_to']=id;
+	delete task['session_id'];
+	db.collection('private_posts')
+	.update({'_id':task['_id']},task,(err,count,status)=>{
+		if(err) throw err;
+		//kick back and chill
+	});
+}
+
+function sendAssignedTask(res,task,id){
+	var reply=baseRes(true,"Successful");
+	reply['id_of_task']=task['_id'];
+	reply['task_createdAt']=task['createdAt'];
+	reply['task_content']=task['content'];
+	reply['task_written_by']=task['written_by'];
+	res.status(200).send(reply);
+}
+
+
+//add reply to a post
+app.post('/addReply',[checkValidLogin,addReply]);
+
+//@TO_DO check if it's been 36 hours since the post
+function addReply(req,res){
+	//@TO-DO sendPushNotif();
+	var replyTask=req.body;
+	replyTask['createdAt']=new Date();
+	delete replyTask['session_id'];
+	db.collection('replies')
+	.insert(replyTask,(err,doc)=>{
+		if(err) throw err;
+		res.status(200).send(baseRes(true,"Successful"));
 	});
 }

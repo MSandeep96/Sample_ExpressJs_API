@@ -146,4 +146,54 @@ Timestamp needs to be in milliseconds. The call then returns twenty posts after 
 		'comment':End of posts
 	}
 
+##(.../assignTask) @POST
+This endpoint is for assigning tasks to users. User needs to manually ask for being assigned a task.
+The endpoint checks for an unassigned task and then assigns it to the user who called this endpoint.
+
+>Params
+
+	{
+		'id':user's id,
+		'session_id':user's session id
+	}
+
+>Reply
+
+	{
+		'success':true,
+		'comment':"Successful",
+		'id_of_task':Id of the task assigned,
+		'task_createdAt':timestamp of when task was created,
+		'task_content':content of the task,
+		'task_written_by':id of the task's creator
+	}
+
+>Errors
+
+Can't be assigned two tasks within 24 hours.
+No posts are available to assign.
+Invalid session id.
+
+##(.../addReply) @POST
+This endpoint is for adding reply to a task assigned to the user.
+
+>Params
+
+	{
+		'session_id':user's session id,
+		'content':'replies content',
+		'written_by':user's id,
+		'written_for':orig post's userid,
+		'reply_to':orig post's id
+	}
+
+>Reply
+
+	{
+		success:true,
+		comment:'Successful'
+	}
+
+>Errors
+	@TODO Limit 36 hours.
 

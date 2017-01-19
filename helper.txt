@@ -21,29 +21,31 @@ Private post format:
 Maintained in mongoDB private post's collection
 {
 	'id': uniqueId for post !important,
-	'createdOn':timeInMillis,
+	'createdAt':dateObject,
 	'content':"Content of the post here",
 	'written_by':userID,
 	'assigned':false or true, //whether the post has been assigned to someone or not
-	'assignedTo':anotherUserID, //needs to be randomly selected but hooooooooooooooooooow?
-	'read':true or false //whether the assignee has read the post or not
+	'assigned_to':anotherUserID, //needs to be randomly selected but hooooooooooooooooooow?
 	'replied':true or false //whether the assignee has replied or not
+	'reply_id': id_of_reply
 }
 
 Reply format:
 Maintained in mongoDB replies collection
 {
 	'id':uniqueID for reply !important,
-	'issuedOn':timeInMillis,
-	'content':"Content of the reply",
-	'writtenBy':anotherUserID
+	'createdAt':dateObject,
+	*'content':"Content of the reply",
+	*'written_by':anotherUserID,
+	*'written_for':userID,
+	*'reply_to':origId
 }
 
 Public posts list:
 Maintained in mongoDB public post's collection
 {
 	'id': uniqueId for post !important,
-	'created_on':timeInMillis,
+	'created_on':dateObject,
 	'content':"Content of the post",
 	'written_by':userID,
 	'session_id':sessionID,
