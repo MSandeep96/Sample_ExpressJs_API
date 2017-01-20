@@ -100,18 +100,18 @@ function checkIfValidBody(req,res,next){
 function checkIfUserExists(req,res,next){
 	var queryObj={};
 	if(req.body.login_type=="google"){
-		queryObj['googleID']=req.body.googleID;
+		queryObj['google_id']=req.body.googleID;
 	}else{
-		queryObj['facebookID']=req.body.facebookID;
+		queryObj['facebook_id']=req.body.facebookID;
 	}
 	db.collection('users')
 	.findOne(queryObj,(err,rec)=>{
 		if(!rec){
+			console.log("Not Found");
 			//user doesn't exist create one
 			next();
 
 		}else{
-
 			//update session id and return it
 			var sess_id=randomString();
 			rec['session_id']=sess_id;
@@ -129,6 +129,7 @@ function checkIfUserExists(req,res,next){
 }
 
 function createUser(req,res,next){
+	console.log("Creating");
 	var sess_id=randomString();
 	var user_obj=req.body;
 	user_obj['session_id']=sess_id;
@@ -137,6 +138,7 @@ function createUser(req,res,next){
 		if(err){
 			res.status(500).send(baseRes(false,"Database error."));
 		}else{
+			console.log("Inserted");
 			var reply=baseRes(true,"Successful");
 			reply['id']=records.insertedIds[0];
 			reply['session_id']=sess_id;
