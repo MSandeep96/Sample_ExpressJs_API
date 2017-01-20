@@ -316,11 +316,11 @@ function getPublicPostsInden(req,res){
 
 //get assigned a task (user requests to be assigned a task)
 //requesting for assignment decreases the number of posts without response
-app.post('/assignTask',[checkValidLogin,checkIfAlreadyAssigned,asssign_task]);
+app.post('/assignTask',[checkValidLogin,checkIfAlreadyAssigned,assign_task]);
 
 function checkIfAlreadyAssigned(req,res,next){
 	var query={
-		'assigned_to':new objectId(req.body['_id']);
+		'assigned_to':new objectId(req.body['_id'])
 	};
 	db.collection('replies')
 	.findOne(query,(err,rec)=>{
