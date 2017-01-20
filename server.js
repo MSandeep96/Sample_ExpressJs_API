@@ -100,9 +100,9 @@ function checkIfValidBody(req,res,next){
 function checkIfUserExists(req,res,next){
 	var queryObj={};
 	if(req.body.login_type=="google"){
-		queryObj['google_id']=req.body.googleID;
+		queryObj['google_id']=req.body.google_id;
 	}else{
-		queryObj['facebook_id']=req.body.facebookID;
+		queryObj['facebook_id']=req.body.facebook_id;
 	}
 	db.collection('users')
 	.findOne(queryObj,(err,rec)=>{
