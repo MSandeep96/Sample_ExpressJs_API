@@ -25,7 +25,7 @@ function reply(success,comment){
 
 function baseRes(success,reason){
 	return new reply(success,reason);
-}
+}	
 
 function randomString() {
 	var chars='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
