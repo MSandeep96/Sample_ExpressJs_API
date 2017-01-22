@@ -1,6 +1,5 @@
 var commons=require('../Commons/commons');
 var database=require('../Database/dbFn');
-var objectId=require('mongodb').ObjectId;
 
 var schema = {
 	"properties": {
@@ -122,6 +121,7 @@ module.exports={
 
 
 	getPublicPostsInden: function(req,res){
+		var objectId=require('mongodb').ObjectId;
 		var timStamp=new Date(Number(req.params.last_timestamp));
 		var query={
 			"_id":{$lt:new objectId(req.params.last_id)},

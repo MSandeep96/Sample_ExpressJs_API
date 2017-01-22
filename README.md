@@ -57,6 +57,25 @@ Reply
 		"comment":"Invalid login type"
 	}
 
+##(../updateUserToken) @POST
+Call to update user's FCM token (android).
+
+>Params
+
+	{
+		'id':"user's id",
+		'session_id':"user's session id",
+		'fcm_token':"user's fcm token"
+	}
+
+>Reply
+
+	Base response.
+
+>Errors
+
+	Schema errors are reported.
+
 ##(.../makePublicPost) @POST
 Can be used to make a public post by a user. Collection of public posts have a TTL of 24 hours.
 Can't make a new post if there is a post within the last 24hrs.

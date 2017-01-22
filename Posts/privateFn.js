@@ -111,6 +111,7 @@ module.exports={
 	},
 
 	checkIfAlreadyAssigned: function(req,res,next){
+		var objectId=require('mongodb').ObjectId;
 		var query={
 			'assigned_to':new objectId(req.body['_id'])
 		};

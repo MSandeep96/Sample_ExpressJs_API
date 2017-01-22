@@ -12,6 +12,7 @@ Maintained in mongoDB user's collection
 	*'facebook_id':"id_of_user on facebook",
 	*'prof_pic':"link to either google or fb prof pic",
 	*'email':"users email address",
+	*'fcm_token':"FCM token",
 	//later versions
 	'charisma': (positive votes/no.of votes)*100
 }

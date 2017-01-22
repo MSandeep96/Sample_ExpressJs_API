@@ -8,7 +8,8 @@ var schema = {
     "login_type":{"enum":["google","facebook"]},
     "google_id":{"type":"string"},
     "facebook_id":{"type":"string"},
-    "prof_pic":{"type":"string"}
+    "prof_pic":{"type":"string"},
+    "fcm_token":{"type":"string"}
   },
     "required":["name","email","login_type","prof_pic"],
     "oneOf": [
@@ -17,6 +18,17 @@ var schema = {
     ],
   "additionalProperties":false
 };
+
+
+var tokenSchema = {
+	"properties":{
+		"id":{"type":"string"},
+		"session_id":{"type":"string"},
+		"fcm_token":{"type":"string"}
+	},
+	"required":["id","session_id","fcm_token"],
+	"additionalProperties":false
+}
 
 
 function randomString() {
@@ -87,6 +99,50 @@ module.exports={
 				reply['new_user']=true;
 				res.status(200).send(reply);
 			}
+		});
+	},
+
+	checkHasToken: function(req,res,next){
+		var Ajv=require('ajv');
+		var ajv=new Ajv();
+		var validate=ajv.compile(schema);
+		var valid=validate(req.body);
+		if(valid){
+			next();
+		}else{
+			var reply=commons.baseRes(false,"Failed");
+			reply['error']=validate.errors;
+			res.status(400).send(reply);
+		}
+	},
+
+	checkValidLogin: function(req,res,next){
+		var objectId=require('mongodb').ObjectId;
+		var queryObj={
+			'_id':new objectId()
+		};
+		database.getDB().collection('users')
+		.findOne(queryObj,(err,rec)=>{
+			if(err) throw err;
+			if(!rec){
+				res.status(403).send(commons.baseRes(false,"Invalid user. Logging you out."));
+			}else if(rec['session_id']!=req.body.session_id){
+				res.status(403).send(commons.baseRes(false,"Invalid session. Logging you out."));
+			}else{
+				req.body['user_obj']=rec;
+				next();
+			}
+		});
+	},
+
+	updateRegToken: function(req,res){
+		var query=req.body['user_obj'];
+		var updateObj=query;
+		updateObj['fcm_token']=req.body['fcm_token'];
+		database.getDB().collection('users')
+		.update(query,updateObj,(err,count,status)=>{
+			if(err) throw err;
+			res.status(200).send(commons.baseRes(true,"Updated"));
 		});
 	}
 

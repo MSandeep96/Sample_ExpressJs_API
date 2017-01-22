@@ -39,7 +39,8 @@ function rootCall(req,res) {
 var userFn=require("./User/userFn");
 //Create or login a user
 app.post('/createUser',[userFn.checkForValidBody,userFn.checkIfUserExists,userFn.createUser]);
-
+//Update user's token
+app.post('/updateUserToken',[userFn.checkHasTokenInBody,userFn.updateRegToken]);
 
 
 //PUBLIC POSTS
