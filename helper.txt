@@ -22,8 +22,9 @@ Maintained in mongoDB private post's collection
 {
 	'id': uniqueId for post !important,
 	'createdAt':dateObject,
-	'content':"Content of the post here",
-	'written_by':userID,
+	*'content':"Content of the post here",
+	*'written_by':userID,
+	*'session_id':!not saved,
 	'assigned':false or true, //whether the post has been assigned to someone or not
 	'assigned_to':anotherUserID, //needs to be randomly selected but hooooooooooooooooooow?
 	'replied':true or false //whether the assignee has replied or not
@@ -46,10 +47,10 @@ Maintained in mongoDB public post's collection
 {
 	'id': uniqueId for post !important,
 	'created_on':dateObject,
-	'content':"Content of the post",
-	'written_by':userID,
-	'session_id':sessionID,
-	'writtenByName':user's name,(redundancy for mongo)
-	'writtenByProfPic':user's prof pic,(redundancy)
+	*'content':"Content of the post",
+	*'written_by':userID,
+	*'session_id':sessionID, !not saved
+	*'written_by_name':user's name,(redundancy for mongo)
+	*'written_by_profpic':user's prof pic,(redundancy)
 	'starCount':0,(count the no. of times the post has been starred by others)
 }

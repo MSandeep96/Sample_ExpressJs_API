@@ -45,12 +45,9 @@ module.exports={
 	},
 
 	checkIfUserExists: function(req,res,next){
-		var queryObj={};
-		if(req.body.login_type=="google"){
-			queryObj['google_id']=req.body.google_id;
-		}else{
-			queryObj['facebook_id']=req.body.facebook_id;
-		}
+		var queryObj={
+			"email":req.body.email
+		};
 		database.getDB().collection('users')
 		.findOne(queryObj,(err,rec)=>{
 			if(!rec){

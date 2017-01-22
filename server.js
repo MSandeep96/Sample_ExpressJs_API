@@ -1,11 +1,9 @@
 //requirements
 const express=require('express');
 const bodyParser = require('body-parser');
-const objectId=require('mongodb').ObjectId;
 
 const app=express();
 
-var userFn=require("./User/userFns");
 var databaseFile=require("./Database/dbFn");
 
 module.exports={
@@ -26,33 +24,7 @@ databaseFile.connect();
 //Parse the body of the request for json.
 app.use(bodyParser.json());
 
-//Server setup and running. Helper functions follow
 
-function hasValidParamsPubPost(body,res){
-	if(body.content==""){
-		res.status(400).send(baseRes(false,"Invalid content."));
-		return false;
-	}
-	if(body.starCount!=undefined){
-		res.status(400).send(baseRes(false,"Invalid starCount, counterfeit detected."));
-		return false;
-	}
-	return true; 
-}
-
-function hasValidParamsPrivPost(body,res){
-	if(body.content==""){
-		res.status(400).send(baseRes(false,"Invalid content"));
-		return false;
-	}
-	if(body.assigned!=undefined || body.read!=undefined || body.replied!=undefined){
-		res.status(400).send(baseRes(false,"Invalid options"));
-		return false;
-	}
-	return true;
-}
-
-//HELPER FUNCTIONS END. ENDPOINTS WITH THERE CALLBACKS FOLLOW
 
 //Send a greeting when root address is called
 app.get('/',rootCall);
@@ -62,245 +34,33 @@ function rootCall(req,res) {
 }
 
 
+
+//USER FUNCTIONS
+var userFn=require("./User/userFn");
 //Create or login a user
 app.post('/createUser',[userFn.checkForValidBody,userFn.checkIfUserExists,userFn.createUser]);
 
 
+
+//PUBLIC POSTS
+var pubFn=require("./Posts/publicFn");
 //Let user make a public post online
-app.post('/makePublicPost',[checkValParsPubPost,checkValidLogin,hasAnotherPost,addPublicPost]);
-
-function checkValParsPubPost(req,res,next){
-	if(!req.body){
-		res.status(400).send(baseRes(false,"No body"));	
-	}else if(hasValidParamsPubPost(req.body,res)){
-		next();
-	}
-}
-
-function checkValidLogin(req,res,next){
-	var queryObj={
-		'_id':new objectId(req.body.written_by)
-	};
-	db.collection('users')
-	.findOne(queryObj,(err,rec)=>{
-		if(err) throw err;
-		if(!rec){
-			res.status(403).send(baseRes(false,"Invalid user. Logging you out."));
-		}else if(rec['session_id']!=req.body.session_id){
-			res.status(403).send(baseRes(false,"Invalid session. Logging you out."));
-		}else{
-			next();
-		}
-	});
-}
-
-function hasAnotherPost(req,res,next){
-	var queryObj={
-		'written_by':req.body['written_by']
-	};
-	db.collection('public_posts')
-	.findOne(queryObj,(err,doc)=>{
-		if(err) throw err;
-		if(!doc){
-			db.collection('private_posts')
-			.findOne(queryObj,(errp,docp)=>{
-				if(errp) throw errp;
-				if(!docp){
-					next();
-				}else{
-					res.status(400).send(baseRes(false,"You need to wait 24 hrs from your last post."));
-				}
-			});
-		}else{
-			res.status(400).send(baseRes(false,"You need to wait 24 hrs from your last post."));
-		}
-	})
-}
-
-function addPublicPost(req,res){
-	req.body['createdAt']=new Date();
-	req.body['star_count']=0;
-	delete req.body['session_id'];
-	db.collection('public_posts')
-	.insert(req.body,(err,recs)=>{
-		if(err){
-			res.status(500).send(baseRes(false,"Database error"));
-			throw err;
-		}else{
-			var reply=baseRes(true,"Successful");
-			reply['createdAt']=(new Date(req.body['createdAt'])).getTime();
-			reply['posted']=true;
-			res.status(200).send(reply);
-		}
-	});
-}
-
-
-//@TO-DO(remove) for testing
-app.post('/makePublicPost/test',function(req,res){
-	var body=req.body;
-	body=body.map(function(val){
-		val['createdAt']=new Date();
-		val['star_count']=0;
-		return val;
-	});
-	db.collection('public_posts')
-	.insertMany(body,function(err,r){
-		if(err) throw err;
-		console.log(r);
-		res.sendStatus(400);
-	});
-});
-
-
-//make private posts
-app.post('/makePrivatePost',[checkValParsPrivPost,checkValidLogin,hasAnotherPost,addPrivatePost]);
-
-function checkValParsPrivPost(req,res,next){
-	if(!req.body){
-		res.status(400).send("No body");
-	}else if(hasValidParamsPrivPost(req.body,res)){
-		next();
-	}
-}
-
-function addPrivatePost(req,res){
-	req.body['createdAt']=new Date();
-	req.body['assigned']=false;
-	req.body['replied']=false;
-	delete req.body['session_id'];
-	db.collection('private_posts')
-	.insert(req.body,(err,recs)=>{
-		if(err){
-			res.status(500).send(baseRes(false,"Database error"));
-			throw error;
-		}else{
-			var reply=baseRes(true,"Successful");
-			reply['createdAt']=(new Date(req.body['createdAt'])).getTime();
-			reply['posted']=true;
-			res.status(200).send(reply);
-		}
-	});
-}
-
-
+app.post('/makePublicPost',[pubFn.checkForValidBody,pubFn.checkValidLogin,pubFn.hasAnotherPost,pubFn.addPublicPost]);
+//TODO remove this
+app.post('/makePublicPost/test',pubFn.testingFn);
 //Get public posts, endpoint gives the latest twenty posts.
-app.get('/getPublicPosts',getPublicPosts);
-
-function getPublicPosts(req,res){
-	var ops={
-		'sort':[['createdAt','desc']],
-		'limit': 20
-	};
-	db.collection('public_posts')
-	.find({},ops,(err,cursor)=>{
-		if(err) throw err;
-
-		cursor.toArray((err,docs)=>{
-			res.status(200).send(docs);
-		});
-	});
-}
-
-
+app.get('/getPublicPosts',pubFn.getPublicPosts);
 //get public requests(with indentation), append last id and last timestamp in millis
-app.get('/getpublicposts/:last_id/:last_timestamp',getPublicPostsInden);
-
-function getPublicPostsInden(req,res){
-	var timStamp=new Date(Number(req.params.last_timestamp));
-	var query={
-		"_id":{$lt:new objectId(req.params.last_id)},
-		"createdAt":{$lte:timStamp}
-	};
-	var ops={
-		'sort':[['createdAt','desc'],['_id','desc']],
-		'limit':20
-	};
-	db.collection('public_posts')
-	.find(query,ops,(err,cursor)=>{
-		if(err) throw err;
-
-		cursor.toArray((err,docs)=>{
-			if(docs.length>0){
-				var rep=baseRes(true,"Successful");
-				rep['posts']=docs;
-				res.status(200).send(docs);
-			}else{
-				res.status(200).send(baseRes(false,"End of posts"));
-			}
-		});
-	});
-}
+app.get('/getpublicposts/:last_id/:last_timestamp',pubFn.getPublicPostsInden);
 
 
+
+//PRIVATE POSTS
+var priFn=require("./Posts/privateFn");
+//make private posts
+app.post('/makePrivatePost',[priFn.checkForValidBody,priFn.checkValidLogin,priFn.hasAnotherPost,priFn.addPrivatePost]);
 //get assigned a task (user requests to be assigned a task)
 //requesting for assignment decreases the number of posts without response
-app.post('/assignTask',[checkValidLogin,checkIfAlreadyAssigned,assign_task]);
-
-function checkIfAlreadyAssigned(req,res,next){
-	var query={
-		'assigned_to':new objectId(req.body['_id'])
-	};
-	db.collection('replies')
-	.findOne(query,(err,rec)=>{
-		if(err) throw err;
-		if(!rec){
-			next();
-		}else{
-			res.status(400).send(baseRes(false,"Already replied to task. Please wait for 24h from previous reply."));
-		}
-	});
-}
-
-function assign_task(req,res){
-	var query={
-		'assigned':false
-	};
-	db.collection('private_posts')
-	.findOne(query,(err,rec)=>{
-		if(err) throw err;
-		if(!rec){
-			res.status(200).send(baseRes(false,'No posts available. Sorry!'));
-		}else{
-			updateRecord(rec,req.body['_id']);
-			sendAssignedTask(res,rec,req.body['_id']);
-		}
-	});
-}
-
-function updateRecord(task,id){
-	task['assigned']=true;
-	task['assigned_to']=id;
-	delete task['session_id'];
-	db.collection('private_posts')
-	.update({'_id':task['_id']},task,(err,count,status)=>{
-		if(err) throw err;
-		//kick back and chill
-	});
-}
-
-function sendAssignedTask(res,task,id){
-	var reply=baseRes(true,"Successful");
-	reply['id_of_task']=task['_id'];
-	reply['task_createdAt']=task['createdAt'];
-	reply['task_content']=task['content'];
-	reply['task_written_by']=task['written_by'];
-	res.status(200).send(reply);
-}
-
-
+app.post('/assignTask',[priFn.checkValidLogin,priFn.checkIfAlreadyAssigned,priFn.assign_task]);
 //add reply to a post
-app.post('/addReply',[checkValidLogin,addReply]);
-
-//@TO_DO check if it's been 36 hours since the post
-function addReply(req,res){
-	//@TO-DO sendPushNotif();
-	var replyTask=req.body;
-	replyTask['createdAt']=new Date();
-	delete replyTask['session_id'];
-	db.collection('replies')
-	.insert(replyTask,(err,doc)=>{
-		if(err) throw err;
-		res.status(200).send(baseRes(true,"Successful"));
-	});
-}
+app.post('/addReply',[priFn.checkValidLogin,priFn.addReply]);
