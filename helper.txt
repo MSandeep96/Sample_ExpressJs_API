@@ -3,15 +3,15 @@ Maintained in mongoDB user's collection
 {  
 	'id':uniqueID !important,
 	'session_id': "generate a random id each time user logs in, required for shared preferences in android" !important,
-	'name':"bleh",
+	*'name':"bleh",
 	//set accordingly
-	'login_type':"facebook/google"
+	*'login_type':"facebook/google"
 	//Either have google props
-	'google_id':"id_of_user on google",
+	*'google_id':"id_of_user on google",
 	//or facebook props
-	'facebookID':"id_of_user on facebook",
-	'prof_pic':"link to either google or fb prof pic",
-
+	*'facebook_id':"id_of_user on facebook",
+	*'prof_pic':"link to either google or fb prof pic",
+	*'email':"users email address",
 	//later versions
 	'charisma': (positive votes/no.of votes)*100
 }
