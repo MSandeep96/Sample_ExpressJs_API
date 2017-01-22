@@ -40,7 +40,7 @@ var userFn=require("./User/userFn");
 //Create or login a user
 app.post('/createUser',[userFn.checkForValidBody,userFn.checkIfUserExists,userFn.createUser]);
 //Update user's token
-app.post('/updateUserToken',[userFn.checkHasTokenInBody,userFn.updateRegToken]);
+app.post('/updateUserToken',[userFn.checkHasToken,userFn.checkValidLogin,userFn.updateRegToken]);
 
 
 //PUBLIC POSTS
@@ -53,7 +53,6 @@ app.post('/makePublicPost/test',pubFn.testingFn);
 app.get('/getPublicPosts',pubFn.getPublicPosts);
 //get public requests(with indentation), append last id and last timestamp in millis
 app.get('/getpublicposts/:last_id/:last_timestamp',pubFn.getPublicPostsInden);
-
 
 
 //PRIVATE POSTS
