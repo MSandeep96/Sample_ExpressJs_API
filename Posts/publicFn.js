@@ -23,10 +23,9 @@ module.exports={
 			val['star_count']=0;
 			return val;
 		});
-		db.collection('public_posts')
+		database.getDB().collection('public_posts')
 		.insertMany(body,function(err,r){
 			if(err) throw err;
-			console.log(r);
 			res.sendStatus(400);
 		});
 	},
@@ -113,7 +112,11 @@ module.exports={
 		.find({},ops,(err,cursor)=>{
 			if(err) throw err;
 			cursor.toArray((err,docs)=>{
-				//TODO change date to millis
+				console.log(docs);
+				docs=docs.map((item)=>{
+					item['createdAt']=new Date(item['createdAt']).getTime();
+					return item;
+				});
 				res.status(200).send(docs);
 			});
 		});
