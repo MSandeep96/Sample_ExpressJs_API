@@ -112,7 +112,6 @@ module.exports={
 		.find({},ops,(err,cursor)=>{
 			if(err) throw err;
 			cursor.toArray((err,docs)=>{
-				console.log(docs);
 				docs=docs.map((item)=>{
 					item['createdAt']=new Date(item['createdAt']).getTime();
 					return item;
@@ -141,11 +140,11 @@ module.exports={
 			cursor.toArray((err,docs)=>{
 				//TODO change date to millis
 				if(docs.length>0){
-					var rep=baseRes(true,"Successful");
+					var rep=commons.baseRes(true,"Successful");
 					rep['posts']=docs;
 					res.status(200).send(docs);
 				}else{
-					res.status(200).send(baseRes(false,"End of posts"));
+					res.status(200).send(commons.baseRes(false,"End of posts"));
 				}
 			});
 		});
