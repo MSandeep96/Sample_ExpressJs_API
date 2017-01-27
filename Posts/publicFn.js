@@ -13,6 +13,14 @@ var schema = {
 	"required":["content","written_by","session_id","written_by_name","written_by_profpic"]
 };
 
+function convertTimeToMillis(docs){
+	docs=docs.map((item)=>{
+		item['createdAt']=new Date(item['createdAt']).getTime();
+		return item;
+	});
+	return docs;
+}
+
 module.exports={
 
 	//TODO remove this
@@ -105,17 +113,14 @@ module.exports={
 
 	getPublicPosts: function(req,res){
 		var ops={
-			'sort':[['createdAt','desc']],
+			'sort':[['createdAt','desc'],['_id','desc']],
 			'limit': 20
 		};
 		database.getDB().collection('public_posts')
 		.find({},ops,(err,cursor)=>{
 			if(err) throw err;
 			cursor.toArray((err,docs)=>{
-				docs=docs.map((item)=>{
-					item['createdAt']=new Date(item['createdAt']).getTime();
-					return item;
-				});
+				docs=convertTimeToMillis(docs);
 				res.status(200).send(docs);
 			});
 		});
@@ -136,9 +141,8 @@ module.exports={
 		database.getDB().collection('public_posts')
 		.find(query,ops,(err,cursor)=>{
 			if(err) throw err;
-
 			cursor.toArray((err,docs)=>{
-				//TODO change date to millis
+				docs=convertTimeToMillis(docs);
 				if(docs.length>0){
 					var rep=commons.baseRes(true,"Successful");
 					rep['posts']=docs;
