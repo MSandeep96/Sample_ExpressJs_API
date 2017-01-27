@@ -146,7 +146,7 @@ module.exports={
 				if(docs.length>0){
 					var rep=commons.baseRes(true,"Successful");
 					rep['posts']=docs;
-					res.status(200).send(docs);
+					res.status(200).send(rep);
 				}else{
 					res.status(200).send(commons.baseRes(false,"End of posts"));
 				}
