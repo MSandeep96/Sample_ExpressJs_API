@@ -3,7 +3,7 @@ var db;
 var connected=false;
 
 function startConnection(){
-	mongoClient.connect("mongodb://sande96:queenrocks96@ds011228.mlab.com:11228/dear_stranger",(err,database)=>{
+	mongoClient.connect("mongodb://test:test@ds011228.mlab.com:11228/dear_stranger",(err,database)=>{
 		if(err) return console.log(err);
 		db=database;
 		connected=true;
